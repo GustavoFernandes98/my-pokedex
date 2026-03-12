@@ -35,18 +35,28 @@ const MOCK_POKEMON_LIST: PokemonListItem[] = [
 ];
 
 export default function PokemonListScreen() {
+
   const theme = useTheme();
   const styles = createStyles(theme);
+
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'PokemonList'>>();
 
+  const handleLogout = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Login" }],
+    });
+  };
+
   const renderItem = ({ item }: { item: PokemonListItem }) => (
-    <TouchableOpacity 
-      style={styles.card} 
-      activeOpacity={0.8} 
-      onPress={() => navigation.navigate('PokemonDetail', { id: item.id})}
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.8}
+      onPress={() => navigation.navigate('PokemonDetail', { id: item.id })}
     >
       <View style={styles.cardLeft}>
         <Text style={styles.cardName}>{item.name}</Text>
+
         <View style={styles.typeContainer}>
           {item.types.map((type) => (
             <View key={type} style={styles.typeBadge}>
@@ -55,20 +65,29 @@ export default function PokemonListScreen() {
           ))}
         </View>
       </View>
+
       <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
+
       <Text style={styles.headerTitle}>Pokédex</Text>
+
       <FlatList
         data={MOCK_POKEMON_LIST}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
       />
+
+      <View style={styles.logoutContainer}>
+        <TouchableOpacity style={styles.buttonSair} onPress={handleLogout}>
+          <Text style={styles.buttonSairText}>Sair</Text>
+        </TouchableOpacity>
+      </View>
+
     </View>
   );
-};
-
+}
