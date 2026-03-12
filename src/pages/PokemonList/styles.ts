@@ -7,19 +7,47 @@ export const createStyles = (theme: Theme) =>
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-    headerTitle: {
-      fontSize: 28,
-      fontWeight: 'bold',
+
+    /* CONTAINER DO TOPO: TÍTULO + LOGOUT */
+    headerContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
       paddingHorizontal: 24,
       paddingTop: 60,
       paddingBottom: 16,
+    },
+
+    headerTitle: {
+      fontSize: 28,
+      fontWeight: 'bold',
       color: theme.colors.text,
     },
+
+    logoutButton: {
+      backgroundColor: theme.colors.accent,
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      borderRadius: 12,
+      shadowColor: theme.colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 3,
+      elevation: 3,
+    },
+
+    logoutText: {
+      color: '#fff',
+      fontWeight: '700',
+      fontSize: 14,
+    },
+
     listContent: {
       paddingHorizontal: 24,
       paddingBottom: 24,
       gap: 12,
     },
+
     card: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -34,10 +62,12 @@ export const createStyles = (theme: Theme) =>
       shadowRadius: 3,
       elevation: 2,
     },
+
     cardLeft: {
       flex: 1,
       marginRight: 12,
     },
+
     cardName: {
       fontSize: 18,
       fontWeight: '700',
@@ -45,25 +75,28 @@ export const createStyles = (theme: Theme) =>
       marginBottom: 8,
       color: theme.colors.text,
     },
+
     typeContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: 6,
     },
+
     typeBadge: {
       backgroundColor: theme.colors.accent,
       borderRadius: 999,
       paddingHorizontal: 10,
       paddingVertical: 4,
     },
+
     typeText: {
       fontSize: 12,
       textTransform: 'capitalize',
       color: theme.colors.text,
     },
+
     cardImage: {
       width: 72,
       height: 72,
     },
   });
-

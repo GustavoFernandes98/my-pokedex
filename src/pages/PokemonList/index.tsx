@@ -14,36 +14,29 @@ type PokemonListItem = {
 };
 
 const MOCK_POKEMON_LIST: PokemonListItem[] = [
-  {
-    id: 1,
-    name: 'bulbasaur',
-    imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png',
-    types: ['grass', 'poison'],
-  },
-  {
-    id: 4,
-    name: 'charmander',
-    imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png',
-    types: ['fire'],
-  },
-  {
-    id: 7,
-    name: 'squirtle',
-    imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png',
-    types: ['water'],
-  },
+  { id: 1, name: 'bulbasaur', imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png', types: ['grass', 'poison'] },
+  { id: 4, name: 'charmander', imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png', types: ['fire'] },
+  { id: 7, name: 'squirtle', imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png', types: ['water'] },
 ];
 
 export default function PokemonListScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'PokemonList'>> ();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'PokemonList'>>();
+
+  const handleLogout = () => {
+    // Redireciona para Login e impede voltar
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
+  };
 
   const renderItem = ({ item }: { item: PokemonListItem }) => (
     <TouchableOpacity
-      style={styles.card} 
-      activeOpacity={0.8} 
-      onPress={() => navigation.navigate('PokemonDetail', {id: item.id})}
+      style={styles.card}
+      activeOpacity={0.8}
+      onPress={() => navigation.navigate('PokemonDetail', { id: item.id })}
     >
       <View style={styles.cardLeft}>
         <Text style={styles.cardName}>{item.name}</Text>
@@ -61,7 +54,14 @@ export default function PokemonListScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerTitle}>Pokédex</Text>
+      {/* CONTAINER DO TOPO: TÍTULO + LOGOUT */}
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Pokédex</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
+
       <FlatList
         data={MOCK_POKEMON_LIST}
         keyExtractor={(item) => String(item.id)}
@@ -70,5 +70,4 @@ export default function PokemonListScreen() {
       />
     </View>
   );
-};
-
+}
