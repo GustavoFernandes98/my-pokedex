@@ -8,18 +8,44 @@ export const createStyles = (theme: Theme) =>
       backgroundColor: theme.colors.background,
     },
 
-    headerTitle: {
-      fontSize: 28,
-      fontWeight: 'bold',
+    /* CONTAINER DO TOPO: TÍTULO + LOGOUT */
+    headerContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
       paddingHorizontal: 24,
       paddingTop: 60,
       paddingBottom: 16,
+    },
+
+    headerTitle: {
+      fontSize: 28,
+      fontWeight: 'bold',
       color: theme.colors.text,
+    },
+
+    logoutButton: {
+      backgroundColor: theme.colors.accent,
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      borderRadius: 12,
+      shadowColor: theme.colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 3,
+      elevation: 3,
+    },
+
+    logoutText: {
+      color: '#fff',
+      fontWeight: '700',
+      fontSize: 14,
     },
 
     listContent: {
       paddingHorizontal: 24,
       paddingBottom: 24,
+      gap: 12,
     },
 
     card: {
@@ -72,25 +98,5 @@ export const createStyles = (theme: Theme) =>
     cardImage: {
       width: 72,
       height: 72,
-    },
-
-    logoutContainer: {
-      alignItems: 'center',
-      marginBottom: 30,
-    },
-
-    buttonSair: {
-      width: 220,
-      height: 52,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#EF5350',
-      borderRadius: 14,
-    },
-
-    buttonSairText: {
-      color: '#FFF',
-      fontWeight: 'bold',
-      fontSize: 18,
     },
   });

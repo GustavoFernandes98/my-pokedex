@@ -1,5 +1,5 @@
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from '../pages/Login';
 import PokemonListScreen from '../pages/PokemonList';
 import PokemonDetailScreen from '../pages/PokemonDetail';
@@ -12,11 +12,12 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export default function AppNavigator() {
+export default function AppNavigator(){
     return (
         <Stack.Navigator 
-            initialRouteName="Login"
-            screenOptions={{ headerShown: false}}>
+            initialRouteName='Login'
+            screenOptions={{headerShown: false}}
+        >
             <Stack.Screen name="Login" component={LoginScreen}/>
             <Stack.Screen name="PokemonList" component={PokemonListScreen}/>
             <Stack.Screen name="PokemonDetail" component={PokemonDetailScreen}/>
