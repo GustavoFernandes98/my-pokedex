@@ -29,6 +29,45 @@ export async function fetchPokemonList(
   return response.json();
 }
 
+export type PokemonListItemUI = {
+  id: number;
+  name: string;
+  imageUrl: string;
+};
+
+function extractIdPokemon(url: string): number {
+  const parts = url.split('/').filter(Boolean);
+  return Number(parts[parts.length - 1]);
+}
+
+export async function fetchPokemonListPage(
+  limit = 10,
+  offset = 0,
+  options?: FetchOptions
+); Promise<{
+  items: PokemonListItemUI[];
+  count: number;
+  next: string | null;
+}> {
+  const data = await fetchPokemonList(limit, offset, options);
+
+  const items = data.results.map((pokemon) => {
+    const id = extractIdPokemon(pokemon.url);
+
+    return {
+      id,
+      name: pokemon.name,
+      imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
+    }
+  });
+
+  return {
+    items,
+    count: data.count,
+    next: data.next
+  }
+}
+
 export type PokemonDetailResponse = {
   id: number;
   name: string;
@@ -71,12 +110,12 @@ export async function fetchPokemonDetail(
   return response.json();
 }
 
-export type PokemonSpeciesResponde = {
+export type PokemonSpeciesResponse = {
   flavor_text_entries: {
     flavor_text: string;
     language: {
-      name:string;
-      url:string;
+      name: string;
+      url: string;
     };
     version: {
       name: string;
@@ -88,12 +127,13 @@ export type PokemonSpeciesResponde = {
 export async function fetchPokemonSpecies(
   nameOrId: string | number,
   options?: FetchOptions,
-): Promise<PokemonSpeciesResponde>{
+): Promise<PokemonSpeciesResponse> {
   const url = `${BASE_URL}/pokemon-species/${nameOrId}`;
-  const response = await fetch(url, {signal: options?.signal});
+  const response = await fetch(url, { signal: options?.signal });
 
-  if(!response.ok) {
-    throw new Error('Falha ao buscar descrição do Pókemon.')
+  if (!response.ok) {
+    throw new Error('Falha ao buscar descrição do Pokémon');
   }
+
   return response.json();
 }
