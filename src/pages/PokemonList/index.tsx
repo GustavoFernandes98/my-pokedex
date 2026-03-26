@@ -1,4 +1,4 @@
-import React, {use, useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { createStyles } from './styles';
 import { useTheme } from '../../global/themes';
@@ -8,6 +8,38 @@ import { RootStackParamList } from '../../routes';
 import { fetchPokemonListPage, type PokemonListItemUI } from '../../services/pokeapi';
 
 const PAGE_SIZE = 10;
+
+// 🎨 Cores por tipo
+const typeColors: Record<string, string> = {
+  normal: '#A8A77A',
+  fire: '#EE8130',
+  water: '#6390F0',
+  electric: '#F7D02C',
+  grass: '#7AC74C',
+  ice: '#96D9D6',
+  fighting: '#C22E28',
+  poison: '#A33EA1',
+  ground: '#E2BF65',
+  flying: '#A98FF3',
+  psychic: '#F95587',
+  bug: '#A6B91A',
+  rock: '#B6A136',
+  ghost: '#735797',
+  dragon: '#6F35FC',
+  dark: '#705746',
+  steel: '#B7B7CE',
+  fairy: '#D685AD',
+};
+
+function getColorByType(types: string[]) {
+  if (!types || types.length === 0) return '#ccc';
+  return typeColors[types[0]] || '#ccc';
+}
+
+// 🔤 Deixar nome com primeira letra maiúscula
+function formatName(name: string) {
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
 
 export default function PokemonListScreen() {
   const theme = useTheme();
@@ -39,7 +71,7 @@ export default function PokemonListScreen() {
     }
   }
 
-async function loadMore() {
+  async function loadMore() {
     if (isLoadingMore || isInitialLoading || isRefreshing || !hasNextPage) return;
     try {
       setIsLoadingMore(true);
@@ -53,7 +85,6 @@ async function loadMore() {
       setIsLoadingMore(false);
     }
   }
-
 
   async function refreshList() {
     try {
@@ -75,32 +106,57 @@ async function loadMore() {
   }, []);
 
   const handleLogout = () => {
-    // Redireciona para Login e impede voltar
     navigation.reset({
       index: 0,
       routes: [{ name: 'Login' }],
     });
   };
 
-  const renderItem = ({ item }: { item: PokemonListItemUI }) => (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.8}
-      onPress={() => navigation.navigate('PokemonDetail', { id: item.id })}
-    >
-      <View style={styles.cardLeft}>
-        <Text style={styles.cardName}>{item.name}</Text>
-        {/* <View style={styles.typeContainer}>
-          {item.types.map((type) => (
-            <View key={type} style={styles.typeBadge}>
-              <Text style={styles.typeText}>{type}</Text>
-            </View>
-          ))}
-        </View> */}
-      </View>
-      <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
-    </TouchableOpacity>
-  );
+  const renderItem = ({ item }: { item: PokemonListItemUI }) => {
+    const bgColor = getColorByType(item.types);
+
+    return (
+      <TouchableOpacity
+        style={[styles.card, { backgroundColor: bgColor }]}
+        activeOpacity={0.8}
+        onPress={() => navigation.navigate('PokemonDetail', { id: item.id })}
+      >
+        <View style={styles.cardLeft}>
+          {/* Nome formatado */}
+          <Text style={styles.cardName}>{formatName(item.name)}</Text>
+
+          {/* ID estilo Pokédex */}
+          <Text style={{ fontSize: 12, color: '#fff', marginTop: 4, fontWeight: 'bold' }}>
+            #{item.id.toString().padStart(3, '0')}
+          </Text>
+
+          {/* Tipos */}
+          <View style={{ flexDirection: 'row', marginTop: 4 }}>
+            {item.types.map((type) => (
+              <View
+                key={type}
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.3)',
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  borderRadius: 8,
+                  marginRight: 4,
+                }}
+              >
+                <Text style={{ color: '#fff', fontSize: 10 }}>
+                  {type}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Imagem */}
+        <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
+      </TouchableOpacity>
+    );
+  };
+
   if (isInitialLoading) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -109,6 +165,7 @@ async function loadMore() {
       </View>
     );
   }
+
   if (error && items.length === 0) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -116,16 +173,16 @@ async function loadMore() {
       </View>
     );
   }
+
   return (
     <View style={styles.container}>
-      {/* CONTAINER DO TOPO: TÍTULO + LOGOUT */}
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Pokédex</Text>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
-      
+
       <FlatList
         data={items}
         keyExtractor={(item) => String(item.id)}
@@ -137,11 +194,10 @@ async function loadMore() {
         refreshing={isRefreshing}
         ListFooterComponent={
           isLoadingMore ? (
-            <View style={{paddingVertical: 16}}>
-              <ActivityIndicator color={theme.colors.primary}></ActivityIndicator>
-          </View>
+            <View style={{ paddingVertical: 16 }}>
+              <ActivityIndicator color={theme.colors.primary} />
+            </View>
           ) : null
-
         }
       />
     </View>

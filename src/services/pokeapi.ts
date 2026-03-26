@@ -32,7 +32,9 @@ export async function fetchPokemonList(
 export type PokemonListItemUI = {
   id: number;
   name: string;
+  url: string;       // ✅ ADICIONADO
   imageUrl: string;
+  types: string[];   // ✅ ADICIONADO
 };
 
 function extractIdPokemon(url: string): number {
@@ -51,22 +53,34 @@ export async function fetchPokemonListPage(
 }> {
   const data = await fetchPokemonList(limit, offset, options);
 
-  const items = data.results.map((pokemon) => {
-    const id = extractIdPokemon(pokemon.url);
+  // 🔥 BUSCA DETALHES DE CADA POKEMON (para pegar types)
+  const items = await Promise.all(
+    data.results.map(async (pokemon) => {
+      const id = extractIdPokemon(pokemon.url);
 
-    return {
-      id,
-      name: pokemon.name,
-      imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
-    }
-  });
+      const response = await fetch(pokemon.url, { signal: options?.signal });
+      const details = await response.json();
+
+      return {
+        id,
+        name: pokemon.name,
+        url: pokemon.url,
+        imageUrl:
+          details.sprites.front_default ||
+          `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
+        types: details.types.map((t: any) => t.type.name),
+      };
+    })
+  );
 
   return {
     items,
     count: data.count,
-    next: data.next
-  }
+    next: data.next,
+  };
 }
+
+// ---------------- DETAIL ----------------
 
 export type PokemonDetailResponse = {
   id: number;
@@ -110,6 +124,8 @@ export async function fetchPokemonDetail(
   return response.json();
 }
 
+// ---------------- SPECIES ----------------
+
 export type PokemonSpeciesResponse = {
   flavor_text_entries: {
     flavor_text: string;
@@ -122,7 +138,7 @@ export type PokemonSpeciesResponse = {
       url: string;
     }
   }[];
-}
+};
 
 export async function fetchPokemonSpecies(
   nameOrId: string | number,
