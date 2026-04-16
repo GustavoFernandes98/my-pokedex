@@ -1,71 +1,46 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, ActivityIndicator, TouchableOpacity, Share } from 'react-native';
+import { View, Text, Image, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { createStyles } from './styles';
 import { useTheme } from '../../global/themes';
 import { useRoute } from '@react-navigation/native';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../routes';
-import { useNavigation } from '@react-navigation/native'; 
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
 import {
   fetchPokemonDetail,
   fetchPokemonSpecies,
   type PokemonDetailResponse,
   type PokemonSpeciesResponse
 } from '../../services/pokeapi';
-import { isFavorite, toggleFavorite } from '../../services/favoriteStorage';
-import { setLastViewedPokemon } from '../../services/lastViewedStorage';
 
-const TYPE_COLORS: Record<string, string> = {
-  normal: '#A8A77A',
-  fire: '#EE8130',
-  water: '#6390F0',
-  electric: '#F7D02C',
-  grass: '#7AC74C',
-  ice: '#96D9D6',
-  fighting: '#C22E28',
-  poison: '#A33EA1',
-  ground: '#E2BF65',
-  flying: '#A98FF3',
-  psychic: '#F95587',
-  bug: '#A6B91A',
-  rock: '#B6A136',
-  ghost: '#735797',
-  dragon: '#6F35FC',
-  dark: '#705746',
-  steel: '#B7B7CE',
-  fairy: '#D685AD',
-};
+// const MOCK_POKEMON_DETAIL = {
+//   id: 25,
+//   name: 'pikachu',
+//   imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
+//   types: ['electric'],
+//   height: 4,
+//   weight: 60,
+//   stats: [
+//     { name: 'hp', value: 35 },
+//     { name: 'attack', value: 55 },
+//     { name: 'defense', value: 40 },
+//     { name: 'speed', value: 90 },
+//   ],
+//   description:
+//     'Whenever Pikachu comes across something new, it blasts it with a jolt of electricity. If you come across a blackened berry, it is evidence that this Pokémon mistook the intensity of its charge.',
+// };
 
-function getTypeColor(type: string) {
-  return TYPE_COLORS[type] ?? '#A8A8A8';
-}
+// type PokemonDetailState = typeof MOCK_POKEMON_DETAIL;
 
 export default function PokemonDetailScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
-
   const route = useRoute<RouteProp<RootStackParamList, 'PokemonDetail'>>();
-  const { id, photoUri } = route.params; // 👈 ADICIONADO photoUri
-
-  // 👇 ADICIONADO navigation
-  const navigation = useNavigation<
-    NativeStackNavigationProp<RootStackParamList, 'PokemonDetail'>
-  >();
+  const { id } = route.params;
 
   const [pokemon, setPokemon] = useState<PokemonDetailResponse | null>(null);
   const [description, setDescription] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [favorite, setFavorite] = useState(false);
-  const [favoriteLoading, setFavoriteLoading] = useState(true);
-
-  // 👇 ADICIONADO função da câmera
-  function handleOpenCamera() {
-    navigation.navigate('PokemonCamera', { id });
-  }
 
   function getPokemonDescriptionFromSpecies(
     species: PokemonSpeciesResponse,
@@ -85,47 +60,6 @@ export default function PokemonDetailScreen() {
     return null;
   }
 
-  async function handleToggleFavorite() {
-    if (!pokemon) return;
-    const summary = {
-      id: pokemon.id,
-      name: pokemon.name,
-      imageUrl:
-        pokemon.sprites.front_default ??
-        `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`,
-      types: pokemon.types.map((t) => t.type.name),
-    };
-    const updated = await toggleFavorite(summary);
-    setFavorite(updated.some((item) => item.id === pokemon.id));
-  }
-
-  async function handleSharePokemon() {
-    if (!pokemon) return;
-
-    const pokeApiUrl = `https://www.pokemon.com/br/pokedex/${pokemon.id}/`;
-    const message = `Olha esse Pokémon na Pokédex: ${pokemon.name} (#${String(pokemon.id).padStart(3, '0')})\n${pokeApiUrl}`;
-
-    try {
-      const result = await Share.share(
-        {
-          message,
-          title: `Pokémon: ${pokemon.name}`,
-        },
-        { subject: `Pokémon: ${pokemon.name}` },
-      );
-
-      if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-
-        }
-      } else if (result.action === Share.dismissedAction) {
-
-      }
-    } catch (error) {
-      console.warn('Erro ao compartilhar:', error);
-    }
-  }
-
   useEffect(() => {
     const controller = new AbortController();
 
@@ -141,15 +75,6 @@ export default function PokemonDetailScreen() {
 
         setPokemon(detail);
         setDescription(getPokemonDescriptionFromSpecies(species));
-
-        await setLastViewedPokemon({
-          id: detail.id,
-          name: detail.name,
-          imageUrl:
-            detail.sprites.front_default ??
-            `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${detail.id}.png`,
-          types: detail.types.map((t) => t.type.name),
-        });
       } catch (e) {
         if ((e as Error).name !== 'AbortError') {
           setError('Não foi possível carregar os dados do pokémon!');
@@ -159,17 +84,7 @@ export default function PokemonDetailScreen() {
       }
     }
 
-    async function loadFavoriteStatus() {
-      try {
-        const result = await isFavorite(id);
-        setFavorite(result);
-      } finally {
-        setFavoriteLoading(false);
-      }
-    }
-
     loadPokemon();
-    loadFavoriteStatus();
 
     return () => { controller.abort(); };
   }, [id]);
@@ -183,6 +98,7 @@ export default function PokemonDetailScreen() {
     );
   }
 
+
   if (error || !pokemon) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -190,6 +106,7 @@ export default function PokemonDetailScreen() {
           {error ?? 'Erro inesperado na simulação.'}
         </Text>
         <TouchableOpacity
+          //onPress={() => navigation.goBack()}
           style={{
             paddingHorizontal: 16,
             paddingVertical: 10,
@@ -205,6 +122,9 @@ export default function PokemonDetailScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.sectionText}>
+        ID informado: {id}
+      </Text>
       <View style={styles.header}>
         <View style={styles.nameRow}>
           <Text style={styles.name}>{pokemon.name}</Text>
@@ -213,10 +133,7 @@ export default function PokemonDetailScreen() {
 
         <View style={styles.typeContainer}>
           {pokemon.types.map(({ type }) => (
-            <View
-              key={type.name}
-              style={[styles.typeBadge, { backgroundColor: TYPE_COLORS[type.name] ?? '#A8A8A8' }]}
-            >
+            <View key={type.name} style={styles.typeBadge}>
               <Text style={styles.typeText}>{type.name}</Text>
             </View>
           ))}
@@ -225,67 +142,7 @@ export default function PokemonDetailScreen() {
         {pokemon.sprites.front_default ?
           (<Image source={{ uri: pokemon.sprites.front_default }} style={styles.image} />) :
           null}
-
-        {/* 👇 IMAGEM DA CÂMERA */}
-        {photoUri && (
-          <Image
-            source={{ uri: photoUri }}
-            style={{
-              width: 200,
-              height: 200,
-              borderRadius: 12,
-              marginTop: 12,
-              alignSelf: 'center',
-            }}
-          />
-        )}
       </View>
-
-      {/* 👇 BOTÃO CÂMERA */}
-      <TouchableOpacity
-        onPress={handleOpenCamera}
-        style={{
-          backgroundColor: '#16a34a',
-          paddingHorizontal: 16,
-          paddingVertical: 10,
-          borderRadius: 999,
-          alignSelf: 'flex-start',
-          marginBottom: 16,
-        }}
-      >
-        <Text style={{ fontWeight: '700', color: '#fff' }}>Abrir câmera</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={handleToggleFavorite}
-        disabled={favoriteLoading}
-        style={{
-          backgroundColor: favorite ? '#FFCB05' : '#E5E7EB',
-          paddingHorizontal: 16,
-          paddingVertical: 10,
-          borderRadius: 999,
-          alignSelf: 'flex-start',
-          marginBottom: 16,
-        }}
-      >
-        <Text style={{ fontWeight: '700', color: '#111827' }}>
-          {favorite ? '★ Favorito' : '☆ Favoritar'}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={handleSharePokemon}
-        style={{
-          backgroundColor: '#2563eb',
-          paddingHorizontal: 16,
-          paddingVertical: 10,
-          borderRadius: 999,
-          alignSelf: 'flex-start',
-          marginBottom: 16,
-        }}
-      >
-        <Text style={{ fontWeight: '700', color: '#fff' }}>Compartilhar</Text>
-      </TouchableOpacity>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Sobre</Text>
